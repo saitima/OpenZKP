@@ -53,6 +53,53 @@ pub fn fft_vec_recursive<Field>(
     }
 }
 
+pub fn fft_vec_recursive_with_unroll<Field, const MAX_UNROLL: usize>(
+    values: &mut [Field],
+    twiddles: &[Field],
+    offset: usize,
+    count: usize,
+    stride: usize,
+) where
+    Field: FieldLike,
+    for<'a> &'a Field: RefFieldLike<Field>,
+{
+    // Target loop size
+    // Use smaller base case during tests to force better coverage of recursion.
+    // TODO: Make const when <https://github.com/rust-lang/rust/issues/49146> lands
+    let max_loop: usize = if cfg!(test) { 8 } else { 128 };
+    let size = values.len() / stride;
+    debug_assert!(size.is_power_of_two());
+    debug_assert!(offset < stride);
+    debug_assert_eq!(values.len() % size, 0);
+    // Special casing small radices doesn't seem to give and advantage.
+    if size > 1 {
+        // Inner FFT radix size/2
+        if stride == count && count < MAX_UNROLL {
+            fft_vec_recursive_with_unroll::<_, MAX_UNROLL>(values, twiddles, offset, 2 * count, 2 * stride);
+        } else {
+            // TODO: We could do parallel recursion here, if we had a way to
+            // do a strided split. (Like the ndarray package provides)
+            fft_vec_recursive_with_unroll::<_, MAX_UNROLL>(values, twiddles, offset, count, 2 * stride);
+            fft_vec_recursive_with_unroll::<_, MAX_UNROLL>(values, twiddles, offset + stride, count, 2 * stride);
+        }
+
+        // Outer FFT radix 2
+        // Lookahead about 3
+        for i in offset..offset + count {
+            radix_2(values, i, stride);
+        }
+        for (offset, twiddle) in (offset..offset + size * stride)
+            .step_by(2 * stride)
+            .zip(twiddles)
+            .skip(1)
+        {
+            for i in offset..offset + count {
+                radix_2_twiddle(values, twiddle, i, stride)
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{

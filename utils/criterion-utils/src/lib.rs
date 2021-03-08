@@ -3,7 +3,7 @@
 // For clippy lints see: https://rust-lang.github.io/rust-clippy/master
 // For rustc lints see: https://doc.rust-lang.org/rustc/lints/index.html
 #![cfg_attr(not(feature = "std"), no_std)]
-#![forbid(unsafe_code)]
+// #![forbid(unsafe_code)]
 #![warn(
     // Enable sets of warnings
     clippy::all,
@@ -103,6 +103,37 @@ where
                 pool.install(|| f(bench))
             },
             THREADS.iter(),
+        )
+        .sample_size(10)
+        .throughput(move |_| Throughput::Elements(size.try_into().unwrap()))
+        .plot_config(PlotConfiguration::default().summary_scale(AxisScale::Logarithmic)),
+    );
+}
+
+pub fn log_thread_bench_with_custom_thread<F, I>(
+    crit: &mut Criterion, 
+    id: &str, 
+    size: usize, 
+    mut f: F,
+    custom_num_threads: I,
+)
+where
+    F: FnMut(&mut Bencher<'_>) + 'static + Send,
+    I: IntoIterator<Item=usize>,
+{
+    let _ = crit.bench(
+        id,
+        ParameterizedBenchmark::new(
+            id,
+            move |bench, &num_threads| {
+                let pool = ThreadPoolBuilder::new()
+                    .num_threads(num_threads)
+                    .build()
+                    .expect("Building benchmark thread pool failed.");
+                pool.install(|| f(bench))
+            },
+            // THREADS.iter(),
+            custom_num_threads
         )
         .sample_size(10)
         .throughput(move |_| Throughput::Elements(size.try_into().unwrap()))

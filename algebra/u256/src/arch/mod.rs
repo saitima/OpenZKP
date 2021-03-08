@@ -9,7 +9,7 @@ mod x86_64;
     target_arch = "x86_64",
     target_feature = "adx"
 ))]
-mod x86_64_adx;
+pub mod x86_64_adx;
 
 // TODO: ARM64 and WASM
 

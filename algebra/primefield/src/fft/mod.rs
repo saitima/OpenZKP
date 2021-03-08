@@ -34,9 +34,10 @@ pub use memadvise::Advice;
 pub use prefetch::MemoryAdvise;
 pub use prefetch::{Prefetch, PrefetchIndex};
 #[cfg(feature = "std")]
-pub use radix_sqrt::radix_sqrt;
+pub use radix_sqrt::{radix_sqrt,radix_sqrt_with_unroll};
 pub use recursive::fft_vec_recursive;
-pub use transpose::transpose_square_stretch;
+pub use recursive::fft_vec_recursive_with_unroll;
+pub use transpose::{transpose_square_stretch, transpose_square_1};
 
 /// Relevant papers:
 /// * D. H. Bailey (1990). FFTs in external or hierarchical memory. <https://www.davidhbailey.com/dhbpapers/fftq.pdf>
@@ -144,10 +145,13 @@ where
 
     fn fft_root(&mut self, root: &Field) {
         const RADIX_SQRT_TRESHOLD: usize = 1 << 10;
-        if cfg!(feature = "std") && self.len() >= RADIX_SQRT_TRESHOLD {
+        // if cfg!(feature = "std") && self.len() >= RADIX_SQRT_TRESHOLD {
+        if cfg!(feature = "std"){
+            // println!("[OPENZKP] running radix sqrt fft");
             #[cfg(feature = "std")]
             radix_sqrt(self, root);
         } else {
+            // println!("[OPENZKP] running recursive fft");
             let twiddles = get_twiddles(root, self.len());
             trace!("Recursive FFT of size {}", self.len());
             fft_vec_recursive(self, &twiddles, 0, 1, 1);

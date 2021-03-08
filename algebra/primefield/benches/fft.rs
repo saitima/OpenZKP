@@ -2,7 +2,7 @@
 use criterion::{black_box, Criterion, Throughput};
 use rand::prelude::*;
 use std::iter::repeat_with;
-use zkp_criterion_utils::{log_size_bench, log_thread_bench};
+use zkp_criterion_utils::{log_size_bench, log_thread_bench, log_thread_bench_with_custom_thread};
 use zkp_primefield::{
     fft::{
         fft_vec_recursive, get_twiddles,
@@ -14,7 +14,8 @@ use zkp_primefield::{
 const SMALL: [usize; 9] = [4, 16, 64, 256, 1024, 4_096, 16_384, 65_536, 262_144];
 
 #[cfg(not(test))]
-const LARGE: [usize; 4] = [1_048_576, 4_194_304, 8_388_608, 16_777_216];
+// const LARGE: [usize; 4] = [1_048_576, 4_194_304, 8_388_608, 16_777_216];
+const LARGE: [usize; 4] = [1_048_576, 4_194_304];
 
 #[cfg(test)]
 const LARGE: [usize; 1] = [1_048_576];
@@ -110,9 +111,26 @@ fn fft_threads(crit: &mut Criterion) {
     });
 }
 
+fn fft_threads_with_custom_thead_num(crit: &mut Criterion) {
+    let custom_num_threads = vec![2,4,8,16,32,48];
+    // let size = 1024;
+    let size = 4_194_304;
+    log_thread_bench_with_custom_thread(
+        crit,
+        "FFT threads",
+        size,
+        move |bench| {
+            let mut values: Vec<_> = (0..size).map(FieldElement::from).collect();
+            bench.iter(|| values.fft())
+        },
+        custom_num_threads,
+    );
+}
+
 pub fn group(crit: &mut Criterion) {
-    fft_base(crit);
-    fft_rec_small(crit);
-    fft_large(crit);
-    fft_threads(crit);
+    // fft_base(crit);
+    // fft_rec_small(crit);
+    // fft_large(crit);
+    // fft_threads(crit);
+    fft_threads_with_custom_thead_num(crit);
 }

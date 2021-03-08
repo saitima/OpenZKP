@@ -37,6 +37,7 @@ pub(crate) fn mul_redc_inline<M: MontgomeryParameters<UInt = U256>>(x: &U256, y:
     }
 }
 
+// pub use proth::mul_redc_inline;
 #[cfg(test)]
 mod tests {
     use super::*;

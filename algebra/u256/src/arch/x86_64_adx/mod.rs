@@ -29,6 +29,7 @@ use std::mem::MaybeUninit;
 
 #[inline(always)]
 pub(crate) fn proth_redc_asm(m3: u64, lo: &U256, hi: &U256) -> U256 {
+    println!("proth_redc_asm");
     // TODO: Fix carry bug
     const ZERO: u64 = 0;
     let lo = lo.as_limbs();
@@ -122,6 +123,7 @@ pub(crate) fn proth_redc_asm(m3: u64, lo: &U256, hi: &U256) -> U256 {
 // Currently unused
 #[inline(always)]
 pub(crate) fn mul_1_asm(a: u64, b0: u64, b1: u64, b2: u64, b3: u64) -> (u64, u64, u64, u64, u64) {
+    println!("mul_1_asm");
     let r0: u64;
     let r1: u64;
     let r2: u64;
@@ -181,6 +183,7 @@ pub(crate) fn mul_add_1_asm(
     b2: u64,
     b3: u64,
 ) -> u64 {
+    println!("mul_1_asm");
     let _lo: u64;
     let _hi: u64;
     let r4: u64;
@@ -230,6 +233,7 @@ pub(crate) fn mul_add_1_asm(
 
 #[inline(always)]
 pub(crate) fn full_mul_asm2(x: &U256, y: &U256) -> (U256, U256) {
+    println!("full_mul_asm2");
     let x = x.as_limbs();
     let y = y.as_limbs();
     let (r0, mut r1, mut r2, mut r3, mut r4) = mul_1_asm(x[0], y[0], y[1], y[2], y[3]);
@@ -253,6 +257,7 @@ pub(crate) fn full_mul_asm2(x: &U256, y: &U256) -> (U256, U256) {
 
 #[inline(always)]
 pub(crate) fn mul_asm(x: &U256, y: &U256) -> U256 {
+    println!("mul_asm");
     let x = x.as_limbs();
     let y = y.as_limbs();
     let mut r = MaybeUninit::<[u64; 4]>::uninit();
@@ -315,7 +320,8 @@ pub(crate) fn mul_asm(x: &U256, y: &U256) -> U256 {
 }
 
 #[inline(always)]
-pub(crate) fn full_mul_asm(x: &U256, y: &U256) -> (U256, U256) {
+pub fn full_mul_asm(x: &U256, y: &U256) -> (U256, U256) {
+    println!("full_mul_asm");
     const ZERO: u64 = 0;
     let x = x.as_limbs();
     let y = y.as_limbs();
@@ -422,7 +428,7 @@ pub(crate) fn full_mul_asm(x: &U256, y: &U256) -> (U256, U256) {
 // This assembly block needs to be contiguous
 #[allow(clippy::too_many_lines)]
 #[inline(always)]
-pub(crate) fn mul_redc<M: MontgomeryParameters<UInt = U256>>(a: &U256, b: &U256) -> U256 {
+pub fn mul_redc<M: MontgomeryParameters<UInt = U256>>(a: &U256, b: &U256) -> U256 {
     const ZERO: u64 = 0; // $3
     let modulus = M::MODULUS.as_limbs();
 
@@ -431,6 +437,7 @@ pub(crate) fn mul_redc<M: MontgomeryParameters<UInt = U256>>(a: &U256, b: &U256)
     let mut result = MaybeUninit::<[u64; 4]>::uninit();
     // MULX dst_high, dst_low, src_b (src_a = %rdx)
     // src_b can be register or memory, not immediate
+    
     unsafe {
         llvm_asm!(r"
             // Assembly from Aztec's Barretenberg implementation, see 
@@ -442,6 +449,7 @@ pub(crate) fn mul_redc<M: MontgomeryParameters<UInt = U256>>(a: &U256, b: &U256)
             mulxq 0($2), %r13, %r14
             mulxq 16($2), %r15, %r10
             movq %r13, %rdx
+
             mulxq $8, %rdx, %r11
             adcxq %r8, %r14
             adoxq %rdi, %r10
@@ -454,6 +462,7 @@ pub(crate) fn mul_redc<M: MontgomeryParameters<UInt = U256>>(a: &U256, b: &U256)
             adcxq %rdi, %r14
             adoxq %r9, %r14
             adcxq %r11, %r15
+
             mulxq $6, %r8, %r9
             mulxq $7, %rdi, %r11
             adoxq %r8, %r15

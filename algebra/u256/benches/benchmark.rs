@@ -177,25 +177,48 @@ fn montgomery_proth_mulmod(crit: &mut Criterion) {
     });
 }
 
+// fn full_mul_asm(crit: &mut Criterion) {
+//     use zkp_u256::arch::x86_64_adx::full_mul_asm;
+
+//     crit.bench_function("proth mont full mul asm", move |bench| {
+
+//         let a = &(random::<U256>() % Proth::MODULUS);
+//         let b = &(random::<U256>() % Proth::MODULUS);
+//         bench.iter(|| full_mul_asm(black_box(a), black_box(b)))
+//     });
+// }
+// fn mul_red_mont(crit: &mut Criterion) {
+//     use zkp_u256::arch::x86_64_adx::mul_redc;
+
+//     crit.bench_function("proth mont full mul asm", move |bench| {
+
+//         let a = &(random::<U256>() % Proth::MODULUS);
+//         let b = &(random::<U256>() % Proth::MODULUS);
+//         bench.iter(|| mul_redc::<Generic>(black_box(a), black_box(b)))
+//     });
+// }
+
 fn main() {
     let crit = &mut Criterion::default().configure_from_args();
-    and(crit);
-    shl(crit);
-    add(crit);
-    sub(crit);
-    sqr(crit);
-    sqr_full(crit);
-    mul(crit);
-    mul_full(crit);
-    invmod256(crit);
-    invmod(crit);
-    divrem(crit);
-    mulmod(crit);
-    montgomery_redc(crit);
-    montgomery_mul_redc(crit);
-    montgomery_mulmod(crit);
-    montgomery_proth_redc(crit);
-    montgomery_proth_mul_redc(crit);
-    montgomery_proth_mulmod(crit);
+    // and(crit);
+    // shl(crit);
+    // add(crit);
+    // sub(crit);
+    // sqr(crit);
+    // sqr_full(crit);
+    // mul(crit);
+    // mul_full(crit);
+    // invmod256(crit);
+    // invmod(crit);
+    // divrem(crit);
+    // mulmod(crit);
+    // montgomery_redc(crit);
+    // montgomery_mul_redc(crit);
+    // montgomery_mulmod(crit);
+    // montgomery_proth_redc(crit);
+    // montgomery_proth_mulmod(crit);
+    // montgomery_proth_mul_redc(crit);
+    // full_mul_asm(crit);
+    // mul_red_mont(crit);
     crit.final_summary();
 }
